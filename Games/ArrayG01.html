@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>ArrayG01: ネスト配列クイズ</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="game-style.css">
+</head>
+<body>
+<main>
+    <h1>ArrayG01: 配列A[配列B[*]] を読み解け！</h1>
+    <p>配列Aは複数の配列（配列Bたち）をまとめた入れ子構造。表示される <code>arrayA[?][??]</code> が何を指すか四択で当てよう。</p>
+
+    <div class="question" id="questionText"></div>
+    <div class="choices" id="choices"></div>
+    <div class="result" id="resultText">ボタンを押してクイズ開始！</div>
+    <button class="next-btn" id="nextBtn" type="button">次の問題 ▶</button>
+
+    <div class="arrays-preview">
+        const arrayB = [<br>
+        &nbsp;&nbsp;['✊','✌️','🖐️'], // ジャンケン<br>
+        &nbsp;&nbsp;['🍎','🍌','🍇','🍑'], // フルーツ<br>
+        &nbsp;&nbsp;['🚗','🚌','🚲'], // のりもの<br>
+        ];<br>
+        const arrayA = arrayB;
+    </div>
+</main>
+
+<script>
+const arrayB = [
+    { label: 'ジャンケン', values: ['✊', '✌️', '🖐️'] },
+    { label: 'フルーツ', values: ['🍎', '🍌', '🍇', '🍑'] },
+    { label: 'のりもの', values: ['🚗', '🚌', '🚲'] }
+];
+
+const arrayA = arrayB.map(group => group.values);
+
+const questionText = document.getElementById('questionText');
+const choicesContainer = document.getElementById('choices');
+const resultText = document.getElementById('resultText');
+const nextBtn = document.getElementById('nextBtn');
+
+let currentAnswer = null;
+
+function pickQuestion() {
+    const outerIndex = Math.floor(Math.random() * arrayA.length);
+    const innerArray = arrayA[outerIndex];
+    const innerIndex = Math.floor(Math.random() * innerArray.length);
+    const answer = innerArray[innerIndex];
+
+    const question = `arrayA[${outerIndex}][${innerIndex}] に入っている値は？`;
+    questionText.textContent = question;
+
+    currentAnswer = answer;
+    buildChoices(answer);
+    resultText.textContent = `${arrayB[outerIndex].label}の配列（配列B[${outerIndex}]）が対象です。`;
+}
+
+function buildChoices(answer) {
+    const pool = arrayA.flat();
+    const choices = new Set([answer]);
+    while (choices.size < 4 && choices.size < pool.length) {
+        const randomValue = pool[Math.floor(Math.random() * pool.length)];
+        choices.add(randomValue);
+    }
+    const shuffled = Array.from(choices).sort(() => Math.random() - 0.5);
+
+    choicesContainer.innerHTML = '';
+    shuffled.forEach(value => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'choice';
+        button.textContent = value;
+        button.addEventListener('click', () => handleChoice(value));
+        choicesContainer.appendChild(button);
+    });
+}
+
+function handleChoice(value) {
+    if (!currentAnswer) return;
+    if (value === currentAnswer) {
+        resultText.textContent = `🎉 正解！ arrayA[...] の中身は ${currentAnswer} でした。`;
+    } else {
+        resultText.textContent = `🙅‍♂️ 残念… 正解は ${currentAnswer} です。`;
+    }
+}
+
+nextBtn.addEventListener('click', pickQuestion);
+</script>
+</body>
+</html>
+

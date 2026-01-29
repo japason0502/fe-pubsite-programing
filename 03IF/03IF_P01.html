@@ -1,0 +1,50 @@
+今開いているのは<br>03IF_P01</br>です｡
+<script>
+    let n = 25; // テスト用の値
+    let result;
+    
+    if (n > 20) {
+        result = "Category C";
+    }
+    else if (n >= 10) {
+        result = "Category B";
+    }
+    else {
+        result = "Category A";
+    }
+    
+    console.log(result);
+</script>
+
+<!--
+問X 次のプログラム中の【A】に入れる正しい答えを、解答群の中から選べ。
+
+関数judgeCategoryは、引数で与えられた整数nに基づいて、次のルールに従って分類結果の文字列を返す関数である。
+
+• nが20より大きい場合、"Category C" を返す。
+• nが10以上20以下の範囲にある場合、"Category B" を返す。
+• それ以外の場合（nが10未満の場合）、"Category A" を返す。
+
+〔プログラム〕
+
+文字列型: judgeCategory(整数型: n)
+    整数型: result
+    if (【A】)
+        result ← "Category C"
+    elseif (n ≧ 10)
+        result ← "Category B"
+    else
+        result ← "Category A"
+    endif
+    return result
+
+解答群
+| 記号 | 【A】に入る条件式 |
+| :--- | :--- |
+| ア | n > 20 |
+| イ | n > 10 |
+| ウ | n < 20 |
+| エ | n <= 20 |
+
+-->
+

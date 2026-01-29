@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>疑似プログラミング: IF分岐デモ</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+    :root {
+        color-scheme: light dark;
+        font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+        line-height: 1.5;
+    }
+    body {
+        margin: 0;
+        padding: 24px;
+        background: #0f1117;
+        color: #e7edf2;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    main {
+        width: min(640px, 90vw);
+        background: #151a24;
+        border: 1px solid #232a39;
+        border-radius: 16px;
+        padding: 28px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+    }
+    h1 {
+        font-size: 1.25rem;
+        margin-bottom: 0.5rem;
+    }
+    p {
+        margin-top: 0;
+        color: #9fb3ce;
+    }
+    .code {
+        background: #0b0d13;
+        border-radius: 12px;
+        padding: 16px 20px;
+        font-family: "Fira Code", "Cascadia Code", monospace;
+        font-size: 1rem;
+        margin: 24px 0 16px;
+        border: 1px solid #1e2533;
+    }
+    .line {
+        white-space: pre;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .indent {
+        padding-left: 24px;
+    }
+    .assign-input {
+        width: 80px;
+        border: none;
+        background: #1f2636;
+        color: #ffdd8a;
+        font-family: inherit;
+        font-size: 1rem;
+        padding: 4px 8px;
+        border-radius: 6px;
+        text-align: right;
+        box-shadow: inset 0 0 0 1px #2f3c55;
+    }
+    .assign-input:focus {
+        outline: 2px solid #5e8bff;
+        background: #262f44;
+    }
+    button {
+        width: 100%;
+        border: none;
+        border-radius: 10px;
+        padding: 14px;
+        font-size: 1rem;
+        font-weight: 600;
+        background: linear-gradient(135deg, #5e8bff, #7c6dff);
+        color: #fff;
+        cursor: pointer;
+        margin-bottom: 20px;
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    button:active {
+        transform: scale(0.98);
+        box-shadow: 0 8px 24px rgba(94, 139, 255, 0.3);
+    }
+    .console {
+        background: #020305;
+        border-radius: 12px;
+        border: 1px solid #1d2534;
+        padding: 16px 20px;
+        min-height: 96px;
+        font-family: "Fira Code", monospace;
+        font-size: 0.95rem;
+        color: #9fe99b;
+    }
+    .console-title {
+        font-size: 0.85rem;
+        letter-spacing: 0.05em;
+        color: #5e6f8c;
+        margin-bottom: 6px;
+        text-transform: uppercase;
+    }
+    .flash {
+        animation: flash 0.35s ease;
+    }
+    @keyframes flash {
+        from { background: rgba(159, 233, 155, 0.15); }
+        to { background: transparent; }
+    }
+    .note {
+        font-size: 0.85rem;
+        color: #8292ae;
+        margin-top: 12px;
+    }
+</style>
+</head>
+<body>
+<main>
+    <h1>疑似プログラミングで IF 文を体験</h1>
+    <p>変数 <code>kion</code> の代入値だけを変えて、「家で遊ぼう」と表示されるか確かめてみよう。</p>
+
+    <div class="code" aria-label="編集可能なコードブロック">
+        <div class="line">let&nbsp;kion&nbsp;=&nbsp;
+            <input id="kionInput" class="assign-input" type="number" value="20" min="-30" max="50" step="1">
+            ;
+        </div>
+        <div class="line">if&nbsp;(kion&nbsp;&lt;=&nbsp;10)&nbsp;{</div>
+        <div class="line indent">console.log('家で遊ぼう');</div>
+        <div class="line">}&nbsp;else&nbsp;{</div>
+        <div class="line indent">console.log('外で遊ぼう');</div>
+        <div class="line">}</div>
+    </div>
+
+    <button id="runButton" type="button">実行 ▶</button>
+
+    <div class="console" aria-live="polite">
+        <div class="console-title">Console</div>
+        <div id="consoleOutput">まだ実行していません。</div>
+    </div>
+
+    <p class="note">※ このページでは <code>let kion = ◯◯;</code> の代入だけ触れます。他の行は固定で、押したボタンに応じて結果が即座に表示されます。</p>
+</main>
+
+<script>
+const input = document.getElementById('kionInput');
+const consoleOutput = document.getElementById('consoleOutput');
+const runButton = document.getElementById('runButton');
+
+function formatValue(value) {
+    if (Number.isNaN(value)) {
+        return null;
+    }
+    return Math.round(value * 10) / 10;
+}
+
+function runPseudoProgram() {
+    const kion = formatValue(Number(input.value));
+
+    if (kion === null) {
+        consoleOutput.textContent = '⚠️ 数字を入力してね。';
+        return;
+    }
+
+    const lines = [];
+    // lines.push(`> let kion = ${kion};`);
+    if (kion <= 10) {
+        lines.push("家で遊ぼう");
+    } else {
+        lines.push("外で遊ぼう");
+    }
+
+    consoleOutput.innerHTML = lines.map(line => `<div>${line}</div>`).join('');
+    consoleOutput.classList.remove('flash');
+    void consoleOutput.offsetWidth;
+    consoleOutput.classList.add('flash');
+}
+
+runButton.addEventListener('click', runPseudoProgram);
+input.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') {
+        runPseudoProgram();
+    }
+});
+</script>
+</body>
+</html>
+

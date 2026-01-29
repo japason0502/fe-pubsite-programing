@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>TraceG01: 変数トレース無限問題</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="game-style.css">
+</head>
+<body>
+<main>
+    <h1>変数トレース無限問題</h1>
+    <div class="problem-info">問題番号: <span id="problemNum">1</span></div>
+    
+    <div class="pattern-selector">
+        <div class="pattern-selector-title">出題パターン:</div>
+        <div class="pattern-checkboxes" id="patternCheckboxes"></div>
+    </div>
+    
+    <div class="code-block" id="codeBlock"></div>
+    
+    <div class="choices" id="choices"></div>
+    
+    <div class="result" id="result" style="display: none;"></div>
+    
+    <div class="trace-table" id="traceTable" style="display: none;"></div>
+    
+    <button class="next-btn" id="nextBtn" style="display: none;">次の問題</button>
+    
+    <div class="stats">
+        <div>正解数: <span id="correctCount">0</span></div>
+        <div>正答率: <span id="accuracy">0</span>%</div>
+    </div>
+</main>
+
+<script src="trace-engine.js"></script>
+<script>
+let problemNum = 1;
+let correctCount = 0;
+let totalCount = 0;
+let currentAnswer = '';
+let answered = false;
+let currentProblem = null;
+let enabledPatterns = [0, 1, 2]; // デフォルトで全パターン有効
+
+function buildProblemFromCode(code) {
+    const traced = window.TraceEngine.traceProgram(code);
+    return {
+        code,
+        answer: traced.answer,
+        steps: traced.steps,
+        varNames: traced.varNames,
+    };
+}
+
+// 問題パターンの種類
+const problemPatterns = [
+    {
+        name: '代入',
+        generate: () => {
+            // ランダムに代入パターンを選択
+            const patterns = [
+                // パターン1: 単純代入
+                // () => {
+                //     const a = Math.floor(Math.random() * 10) + 1;
+                //     const b = Math.floor(Math.random() * 10) + 1;
+                //     const c = Math.floor(Math.random() * 10) + 1;
+                //     const code = [
+                //         `整数型: a ← ${a}`,
+                //         `整数型: b ← ${b}`,
+                //         `整数型: c ← ${c}`,
+                //         `a ← b`,
+                //         `b ← a`,
+                //         `c ← b`,
+                //         `aの値とcの値をこの順にカンマ区切りで出力する`
+                //     ];
+                //     let valA = a, valB = b, valC = c;
+                //     const steps = [
+                //         { step: '初期値', a: valA, b: valB, c: valC }
+                //     ];
+                //     valA = valB;
+                //     steps.push({ step: 'a ← b', a: valA, b: valB, c: valC });
+                //     valB = valA;
+                //     steps.push({ step: 'b ← a', a: valA, b: valB, c: valC });
+                //     valC = valB;
+                //     steps.push({ step: 'c ← b', a: valA, b: valB, c: valC });
+                //     return { code, answer: `${valA},${valC}`, vars: { a, b, c }, steps, varNames: ['a', 'b', 'c'] };
+                // },
+                // パターン2: 連鎖代入
+                () => {
+                    const x = Math.floor(Math.random() * 10) + 1;
+                    const y = Math.floor(Math.random() * 10) + 1;
+                    const z = Math.floor(Math.random() * 10) + 1;
+                    const code = [
+                        `整数型: x ← ${x}`,
+                        `整数型: y ← ${y}`,
+                        `整数型: z ← ${z}`,
+                        `x ← y`,
+                        `y ← z`,
+                        `z ← x`,
+                        `x ← y`,
+                        `yの値とzの値をこの順にカンマ区切りで出力する`
+                    ];
+                    return buildProblemFromCode(code);
+                },
+                // パターン3: 3変数循環代入
+                () => {
+                    const a = Math.floor(Math.random() * 10) + 1;
+                    const b = Math.floor(Math.random() * 10) + 1;
+                    const c = Math.floor(Math.random() * 10) + 1;
+                    const code = [
+                        `整数型: a ← ${a}`,
+                        `整数型: b ← ${b}`,
+                        `整数型: c ← ${c}`,
+                        `c ← b`,
+                        `b ← a`,
+                        `a ← c`,
+                        `aの値とcの値をこの順にカンマ区切りで出力する`
+                    ];
+                    return buildProblemFromCode(code);
+                }
+            ];
+            return patterns[Math.floor(Math.random() * patterns.length)]();
+        }
+    },
+    {
+        name: '変数同士の計算',
+        generate: () => {
+            const x = Math.floor(Math.random() * 5) + 1;
+            const y = Math.floor(Math.random() * 5) + 1;
+            const z = Math.floor(Math.random() * 5) + 1;
+            const code = [
+                `整数型: x ← ${x}`,
+                `整数型: y ← ${y}`,
+                `整数型: z ← ${z}`,
+                `x ← y + z`,
+                `y ← x + z`,
+                `z ← x + y`,
+                `xの値とzの値をこの順にカンマ区切りで出力する`
+            ];
+            return buildProblemFromCode(code);
+        }
+    },
+    {
+        name: '変数に値を追加する',
+        generate: () => {
+            // ランダムにパターンを選択
+            const patterns = [
+                // パターン1: 加算と減算の組み合わせ（元の問題）
+                () => {
+                    const initial = Math.floor(Math.random() * 5) + 1;
+                    const add = Math.floor(Math.random() * 5) + 1;
+                    const sub = Math.floor(Math.random() * 5) + 1;
+                    const code = [
+                        `整数型: i ← ${initial}`,
+                        `i ← i + ${add}`,
+                        `i ← i - ${sub}`,
+                        `iの値を出力する`
+                    ];
+                    return buildProblemFromCode(code);
+                },
+                // パターン2: 複数回の加算
+                () => {
+                    const initial = Math.floor(Math.random() * 5) + 1;
+                    const add1 = Math.floor(Math.random() * 5) + 1;
+                    const add2 = Math.floor(Math.random() * 5) + 1;
+                    const code = [
+                        `整数型: i ← ${initial}`,
+                        `i ← i + ${add1}`,
+                        `i ← i + ${add2}`,
+                        `iの値を出力する`
+                    ];
+                    return buildProblemFromCode(code);
+                },
+                // パターン3: 複数回の減算
+                () => {
+                    const initial = Math.floor(Math.random() * 10) + 5;
+                    const sub1 = Math.floor(Math.random() * 3) + 1;
+                    const sub2 = Math.floor(Math.random() * 3) + 1;
+                    const code = [
+                        `整数型: i ← ${initial}`,
+                        `i ← i - ${sub1}`,
+                        `i ← i - ${sub2}`,
+                        `iの値を出力する`
+                    ];
+                    return buildProblemFromCode(code);
+                },
+                // パターン4: 加算→減算→加算
+                () => {
+                    const initial = Math.floor(Math.random() * 5) + 1;
+                    const add1 = Math.floor(Math.random() * 5) + 1;
+                    const sub = Math.floor(Math.random() * 3) + 1;
+                    const add2 = Math.floor(Math.random() * 5) + 1;
+                    const code = [
+                        `整数型: i ← ${initial}`,
+                        `i ← i + ${add1}`,
+                        `i ← i - ${sub}`,
+                        `i ← i + ${add2}`,
+                        `iの値を出力する`
+                    ];
+                    return buildProblemFromCode(code);
+                }
+            ];
+            return patterns[Math.floor(Math.random() * patterns.length)]();
+        }
+    }
+];
+
+function generateChoices(correctAnswer) {
+    const choices = new Set([correctAnswer]);
+    
+    // カンマ区切りの場合と単一値の場合を判定
+    if (correctAnswer.includes(',')) {
+        // カンマ区切りの場合（複数変数の出力）
+        const [correctX, correctY] = correctAnswer.split(',').map(Number);
+        
+        // 正解に近い値を生成
+        let attempts = 0;
+        while (choices.size < 6 && attempts < 100) {
+            attempts++;
+            const offset1 = Math.floor(Math.random() * 5) - 2;
+            const offset2 = Math.floor(Math.random() * 5) - 2;
+            const choice = `${correctX + offset1},${correctY + offset2}`;
+            if (choice !== correctAnswer && !choices.has(choice)) {
+                choices.add(choice);
+            }
+        }
+        
+        // まだ6個に満たない場合は、より広い範囲で生成
+        if (choices.size < 6) {
+            for (let offset1 = -5; offset1 <= 5 && choices.size < 6; offset1++) {
+                for (let offset2 = -5; offset2 <= 5 && choices.size < 6; offset2++) {
+                    const choice = `${correctX + offset1},${correctY + offset2}`;
+                    if (choice !== correctAnswer && !choices.has(choice)) {
+                        choices.add(choice);
+                    }
+                }
+            }
+        }
+    } else {
+        // 単一値の場合（変数に値を追加するパターンなど）
+        const correctValue = Number(correctAnswer);
+        
+        // 正解に近い値を生成（負の値も許可）
+        let attempts = 0;
+        while (choices.size < 6 && attempts < 100) {
+            attempts++;
+            const offset = Math.floor(Math.random() * 10) - 5;
+            const choice = `${correctValue + offset}`;
+            if (choice !== correctAnswer && !choices.has(choice)) {
+                choices.add(choice);
+            }
+        }
+        
+        // まだ6個に満たない場合は、より広い範囲で生成
+        if (choices.size < 6) {
+            for (let offset = -10; offset <= 10 && choices.size < 6; offset++) {
+                const choice = `${correctValue + offset}`;
+                if (choice !== correctAnswer && !choices.has(choice)) {
+                    choices.add(choice);
+                }
+            }
+        }
+    }
+    
+    const choiceArray = Array.from(choices);
+    // シャッフル
+    for (let i = choiceArray.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [choiceArray[i], choiceArray[j]] = [choiceArray[j], choiceArray[i]];
+    }
+    
+    return choiceArray;
+}
+
+function displayProblem() {
+    answered = false;
+    
+    // 有効なパターンからランダムに選択
+    const availablePatterns = problemPatterns.filter((_, index) => enabledPatterns.includes(index));
+    if (availablePatterns.length === 0) {
+        alert('少なくとも1つのパターンを選択してください');
+        return;
+    }
+    const pattern = availablePatterns[Math.floor(Math.random() * availablePatterns.length)];
+    const problem = pattern.generate();
+    currentAnswer = problem.answer;
+    currentProblem = problem;
+    
+    // コードブロックを表示
+    const codeBlock = document.getElementById('codeBlock');
+    codeBlock.innerHTML = problem.code.map((line, index) => {
+        if (index < problem.code.length - 1) {
+            return `<div class="code-line">${line}</div>`;
+        } else {
+            return `<div class="code-line output-line">${line}</div>`;
+        }
+    }).join('');
+    
+    // 選択肢を生成
+    const choices = generateChoices(problem.answer);
+    const choicesDiv = document.getElementById('choices');
+    choicesDiv.innerHTML = '';
+    
+    const labels = ['ア', 'イ', 'ウ', 'エ', 'オ', 'カ'];
+    choices.forEach((choice, index) => {
+        const button = document.createElement('button');
+        button.className = 'choice';
+        button.textContent = `${labels[index]}　${choice}`;
+        button.onclick = () => selectAnswer(choice, button);
+        choicesDiv.appendChild(button);
+    });
+    
+    // 結果と次へボタンを非表示
+    document.getElementById('result').style.display = 'none';
+    document.getElementById('traceTable').style.display = 'none';
+    document.getElementById('nextBtn').style.display = 'none';
+    
+    // 問題番号を更新
+    document.getElementById('problemNum').textContent = problemNum;
+}
+
+function selectAnswer(selected, button) {
+    if (answered) return;
+    answered = true;
+    totalCount++;
+    
+    const allButtons = document.querySelectorAll('.choice');
+    allButtons.forEach(btn => {
+        btn.disabled = true;
+        if (btn.textContent.includes(currentAnswer)) {
+            btn.classList.add('correct');
+        }
+    });
+    
+    const resultDiv = document.getElementById('result');
+    if (selected === currentAnswer) {
+        correctCount++;
+        resultDiv.textContent = '正解！';
+        resultDiv.className = 'result correct';
+        button.classList.add('correct');
+    } else {
+        resultDiv.textContent = `不正解。正解は「${currentAnswer}」です。`;
+        resultDiv.className = 'result incorrect';
+        button.classList.add('incorrect');
+    }
+    
+    resultDiv.style.display = 'block';
+    document.getElementById('nextBtn').style.display = 'block';
+    
+    // トレース表を表示
+    displayTraceTable();
+    
+    updateStats();
+}
+
+function displayTraceTable() {
+    if (!currentProblem || !currentProblem.steps) return;
+    
+    const traceTable = document.getElementById('traceTable');
+    const varNames = currentProblem.varNames;
+    
+    let html = '<table class="trace-table-content">';
+    html += '<thead><tr><th>ステップ</th>';
+    varNames.forEach(name => {
+        html += `<th>${name}</th>`;
+    });
+    html += '</tr></thead><tbody>';
+    
+    currentProblem.steps.forEach((step, index) => {
+        html += '<tr>';
+        html += `<td>${step.step}</td>`;
+        varNames.forEach(name => {
+            const value = step[name];
+            const prevValue = index > 0 ? currentProblem.steps[index - 1][name] : null;
+            
+            if (index === 0) {
+                // 初期値はそのまま表示
+                html += `<td>${value}</td>`;
+            } else if (prevValue !== null && value !== prevValue) {
+                // 変更された値: 変更前は取り消し線、変更後は太字
+                html += `<td><del class="old-value">${prevValue}</del><br><strong class="new-value">${value}</strong></td>`;
+            } else {
+                // 変更されていない値はそのまま
+                html += `<td>${value}</td>`;
+            }
+        });
+        html += '</tr>';
+    });
+    
+    html += '</tbody></table>';
+    traceTable.innerHTML = html;
+    traceTable.style.display = 'block';
+}
+
+function nextProblem() {
+    problemNum++;
+    displayProblem();
+}
+
+function updateStats() {
+    document.getElementById('correctCount').textContent = correctCount;
+    const accuracy = totalCount > 0 ? Math.round((correctCount / totalCount) * 100) : 0;
+    document.getElementById('accuracy').textContent = accuracy;
+}
+
+document.getElementById('nextBtn').onclick = nextProblem;
+
+// パターン選択チェックボックスを生成
+function initPatternSelector() {
+    const checkboxesDiv = document.getElementById('patternCheckboxes');
+    problemPatterns.forEach((pattern, index) => {
+        const label = document.createElement('label');
+        label.className = 'pattern-checkbox-label';
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.checked = true;
+        checkbox.value = index;
+        checkbox.addEventListener('change', (e) => {
+            if (e.target.checked) {
+                if (!enabledPatterns.includes(index)) {
+                    enabledPatterns.push(index);
+                }
+            } else {
+                enabledPatterns = enabledPatterns.filter(i => i !== index);
+            }
+        });
+        label.appendChild(checkbox);
+        label.appendChild(document.createTextNode(` ${pattern.name}`));
+        checkboxesDiv.appendChild(label);
+    });
+}
+
+initPatternSelector();
+
+// 初期問題を表示
+displayProblem();
+</script>
+</body>
+</html>
+

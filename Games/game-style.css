@@ -1,0 +1,252 @@
+/* ゲーム共通スタイル */
+body {
+    font-family: "Segoe UI", system-ui, sans-serif;
+    background: #0f1724;
+    color: #f1f5ff;
+    margin: 0;
+    padding: 32px 16px;
+    display: flex;
+    justify-content: center;
+}
+
+main {
+    width: min(600px, 100%);
+    background: #161f33;
+    border: 1px solid #24304b;
+    border-radius: 16px;
+    padding: 28px;
+    box-shadow: 0 20px 55px rgba(0, 0, 0, 0.45);
+}
+
+h1 {
+    font-size: 1.2rem;
+    margin-top: 0;
+    color: #5e8bff;
+}
+
+p {
+    color: #9fb0cb;
+    line-height: 1.6;
+}
+
+.problem-info {
+    color: #9fb0cb;
+    font-size: 0.9rem;
+    margin-bottom: 16px;
+}
+
+.code-block,
+.question {
+    margin: 24px 0 16px;
+    font-family: "Fira Code", "Cascadia Code", monospace;
+    background: #0b111f;
+    border-radius: 12px;
+    padding: 18px;
+    border: 1px solid #1f2b44;
+    line-height: 1.8;
+    color: #e7edf2;
+}
+
+.code-line {
+    margin: 4px 0;
+}
+
+.variable {
+    color: #ffdd8a;
+}
+
+.value {
+    color: #9fe99b;
+}
+
+.output-line {
+    color: #ff6b9d;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid #1f2b44;
+}
+
+.choices {
+    display: grid;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+button.choice {
+    border: none;
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 1rem;
+    background: #233152;
+    color: #f8fbff;
+    cursor: pointer;
+    transition: transform 0.1s ease, background 0.1s ease;
+    text-align: left;
+}
+
+button.choice:hover {
+    background: #2f3f64;
+}
+
+button.choice:active {
+    transform: scale(0.97);
+}
+
+button.choice.correct {
+    background: #1a5f3f;
+    color: #9fe99b;
+}
+
+button.choice.incorrect {
+    background: #5f1a1a;
+    color: #ff6b9d;
+}
+
+button.choice:disabled {
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.result {
+    margin-top: 16px;
+    min-height: 32px;
+    font-weight: 600;
+    padding: 12px;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.result.correct {
+    background: #1a5f3f;
+    color: #9fe99b;
+}
+
+.result.incorrect {
+    background: #5f1a1a;
+    color: #ff6b9d;
+}
+
+.next-btn {
+    margin-top: 12px;
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #5e8bff, #8a6dff);
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.1s ease;
+}
+
+.next-btn:hover {
+    transform: translateY(-2px);
+}
+
+.next-btn:active {
+    transform: scale(0.98);
+}
+
+.stats {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #24304b;
+    font-size: 0.9rem;
+    color: #9fb0cb;
+}
+
+.arrays-preview {
+    margin-top: 24px;
+    font-family: "Fira Code", monospace;
+    font-size: 0.85rem;
+    background: #0e1424;
+    border: 1px solid #1e2942;
+    border-radius: 12px;
+    padding: 16px;
+}
+
+.trace-table {
+    margin-top: 20px;
+    background: #0e1424;
+    border: 1px solid #1e2942;
+    border-radius: 12px;
+    padding: 16px;
+    overflow-x: auto;
+}
+
+.trace-table-content {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: "Fira Code", monospace;
+    font-size: 0.9rem;
+}
+
+.trace-table-content th {
+    background: #1a2332;
+    color: #5e8bff;
+    padding: 10px;
+    text-align: left;
+    border-bottom: 2px solid #24304b;
+    font-weight: 600;
+}
+
+.trace-table-content td {
+    padding: 10px;
+    border-bottom: 1px solid #1e2942;
+    color: #e7edf2;
+}
+
+.trace-table-content tbody tr:hover {
+    background: #151a24;
+}
+
+.trace-table-content .old-value {
+    color: #9fb0cb;
+    text-decoration: line-through;
+    opacity: 0.7;
+}
+
+.trace-table-content .new-value {
+    color: #9fe99b;
+    font-weight: 600;
+}
+
+.pattern-selector {
+    margin: 16px 0;
+    padding: 12px;
+    background: #0e1424;
+    border: 1px solid #1e2942;
+    border-radius: 8px;
+}
+
+.pattern-selector-title {
+    color: #9fb0cb;
+    font-size: 0.9rem;
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.pattern-checkboxes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.pattern-checkbox-label {
+    display: flex;
+    align-items: center;
+    color: #e7edf2;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.pattern-checkbox-label input[type="checkbox"] {
+    margin-right: 6px;
+    cursor: pointer;
+    width: 16px;
+    height: 16px;
+}
+
